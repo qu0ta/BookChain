@@ -10,9 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/qu0ta/BookChain/internal/config"
 	"github.com/qu0ta/BookChain/internal/httpserver"
 	"github.com/qu0ta/BookChain/internal/platform/db"
+	"github.com/qu0ta/BookChain/internal/users"
 )
 
 func main() {
@@ -31,7 +33,11 @@ func main() {
 	defer pool.Close()
 	log.Println("PostgreSQL connection established")
 
-	server := httpserver.New(cfg.HTTPPort, pool)
+	userHandler := getUserHandler(pool)
+
+	server := httpserver.New(
+		cfg.HTTPPort, pool, userHandler,
+	)
 
 	serverErrors := make(chan error, 1)
 
@@ -67,4 +73,11 @@ func main() {
 	}
 	log.Println("HTTP server stop complete")
 
+}
+
+func getUserHandler(pool *pgxpool.Pool) *users.Handler {
+	userRepo := users.NewRepository(pool)
+	userService := users.NewService(userRepo)
+	userHandler := users.NewHandler(userService)
+	return userHandler
 }
