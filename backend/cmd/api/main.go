@@ -21,8 +21,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -68,6 +66,5 @@ func main() {
 		return
 	}
 	log.Println("HTTP server stop complete")
-
 
 }
