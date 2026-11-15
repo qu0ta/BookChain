@@ -12,6 +12,7 @@ import (
 
 	"github.com/qu0ta/BookChain/internal/config"
 	"github.com/qu0ta/BookChain/internal/httpserver"
+	"github.com/qu0ta/BookChain/internal/platform/db"
 )
 
 func main() {
@@ -20,10 +21,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server := httpserver.New(cfg.HTTPPort)
+
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	pool, err := db.NewPostgres(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal("failed to connect to database:", err)
+	}
+	defer pool.Close()
+	log.Println("PostgreSQL connection established")
+
+	server := httpserver.New(cfg.HTTPPort, pool)
 
 	serverErrors := make(chan error, 1)
 
