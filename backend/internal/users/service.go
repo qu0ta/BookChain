@@ -28,7 +28,7 @@ func NewService(repo UserRepository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) GetById(ctx context.Context, id string) (*User, error) {
+func (s *Service) GetByID(ctx context.Context, id string) (*User, error) {
 	userID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, ErrInvalidUserID

@@ -9,10 +9,18 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func New(port string, pool *pgxpool.Pool) *http.Server {
+type Handler interface {
+	RegisterRoutes(mux *http.ServeMux)
+}
+
+func New(port string, pool *pgxpool.Pool, handlers ...Handler) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", health)
 	mux.HandleFunc("GET /ready", ready(pool))
+
+	for _, handler := range handlers {
+		handler.RegisterRoutes(mux)
+	}
 
 	return &http.Server{
 		Addr:              ":" + port,

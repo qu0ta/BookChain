@@ -76,7 +76,7 @@ func TestService_GetByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewService(tt.repo)
 
-			user, err := service.GetById(context.Background(), tt.id)
+			user, err := service.GetByID(context.Background(), tt.id)
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) {
