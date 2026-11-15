@@ -1,0 +1,23 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+*.test
+
+*.out
+coverage.html
+coverage.txt
+coverage.xml
+*.coverprofile
+profile.cov
+
+go.work
+go.work.sum
+
+.env
+
+# Editor/IDE
+ .idea/
+# .vscode/
