@@ -69,3 +69,41 @@ VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at`
 	}
 	return nil
 }
+
+func (r *Repository) UpsertTelegramUser(ctx context.Context, telegramID int64, username *string, firstName string, lastName *string) (*User, error) {
+	const query = `
+		INSERT INTO users (
+			telegram_id,
+			username,
+			first_name,
+			last_name
+		) VALUES ($1, $2, $3, $4)
+		ON CONFLICT (telegram_id)
+		DO UPDATE SET
+			username = EXCLUDED.username,
+			first_name = EXCLUDED.first_name,
+			last_name = EXCLUDED.last_name,
+			updated_at = NOW()
+		RETURNING
+			id,
+			telegram_id,
+			username,
+			first_name,
+			last_name,
+			created_at,
+			updated_at
+	`
+
+	var user User
+
+	err := r.pool.QueryRow(
+		ctx, query, telegramID, username, firstName, lastName,
+	).Scan(
+		&user.ID, &user.TelegramID, &user.Username, &user.FirstName, &user.LastName, &user.CreatedAt, &user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("upsert telegram user: %w", err)
+	}
+
+	return &user, nil
+}
