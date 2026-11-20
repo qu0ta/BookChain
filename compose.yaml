@@ -8,15 +8,57 @@ services:
       POSTGRES_USER: bookchain
       POSTGRES_PASSWORD: bookchain
       POSTGRES_DB: bookchain
+
     ports:
       - "127.0.0.1:5433:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U bookchain -d bookchain"]
       interval: 5s
       timeout: 3s
       retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bookchain-redis
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:6380:6379"
+
+    command: ["redis-server", "--appendonly", "yes"]
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  migrate:
+    image: migrate/migrate:4
+    container_name: bookchain-migrate
+
+    volumes:
+      - ./backend/migrations:/migrations:ro
+
+    command:
+      - "-path"
+      - "/migrations"
+      - "-database"
+      - "postgres://bookchain:bookchain@postgres:5432/bookchain?sslmode=disable"
+      - "up"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    restart: "no"
+
 volumes:
   postgres_data:
-
+  redis_data:
