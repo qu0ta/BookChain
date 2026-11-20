@@ -13,6 +13,7 @@ import (
 	"github.com/qu0ta/BookChain/internal/auth"
 	"github.com/qu0ta/BookChain/internal/config"
 	"github.com/qu0ta/BookChain/internal/httpserver"
+	"github.com/qu0ta/BookChain/internal/platform/cache"
 	"github.com/qu0ta/BookChain/internal/platform/db"
 	"github.com/qu0ta/BookChain/internal/users"
 )
@@ -33,6 +34,13 @@ func main() {
 	defer pool.Close()
 	log.Println("PostgreSQL connection established")
 
+	redisClient, err := cache.NewRedis(ctx, cfg.RedisAddr)
+	if err != nil {
+		log.Fatalf("failed to connect to Redis: %v", err)
+	}
+	defer redisClient.Close()
+	log.Println("Redis connection established")
+
 	userRepo := users.NewRepository(pool)
 	userService := users.NewService(userRepo)
 	userHandler := users.NewHandler(userService)
@@ -40,6 +48,9 @@ func main() {
 	telegramValidator := auth.NewTelegramAuth(cfg.TelegramBotToken)
 	authService := auth.NewService(telegramValidator, userRepo)
 	authHandler := auth.NewHandler(authService)
+
+	sessionStore := auth.NewSessionStore(redisClient)
+	_ = sessionStore
 
 	server := httpserver.New(
 		cfg.HTTPPort, pool, userHandler, authHandler,
