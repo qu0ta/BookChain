@@ -39,7 +39,7 @@ func ready(pool *pgxpool.Pool) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
-		fmt.Println("asd")
+
 		if err := pool.Ping(ctx); err != nil {
 			http.Error(w, "database unavailable", http.StatusServiceUnavailable)
 			return
