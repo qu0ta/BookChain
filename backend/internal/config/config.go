@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	HTTPPort    string
-	DatabaseURL string
+	HTTPPort         string
+	DatabaseURL      string
+	TelegramBotToken string
 }
 
 func Load() (*Config, error) {
@@ -20,14 +21,18 @@ func Load() (*Config, error) {
 	}
 
 	cfg := &Config{
-		HTTPPort:    os.Getenv("HTTP_PORT"),
-		DatabaseURL: os.Getenv("DATABASE_URL"),
+		HTTPPort:         os.Getenv("HTTP_PORT"),
+		DatabaseURL:      os.Getenv("DATABASE_URL"),
+		TelegramBotToken: os.Getenv("TELEGRAM_BOT_TOKEN"),
 	}
 	if strings.TrimSpace(cfg.HTTPPort) == "" {
 		return nil, fmt.Errorf("HTTP_PORT env variable not set")
 	}
 	if strings.TrimSpace(cfg.DatabaseURL) == "" {
 		return nil, fmt.Errorf("DATABASE_URL env variable not set")
+	}
+	if strings.TrimSpace(cfg.TelegramBotToken) == "" {
+		return nil, fmt.Errorf("TELEGRAM_BOT_TOKEN env variable not set")
 	}
 
 	return cfg, nil
